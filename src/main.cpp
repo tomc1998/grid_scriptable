@@ -10,6 +10,7 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
+#include <deque>
 
 #include "input.hpp"
 #include "load_image.hpp"
@@ -20,6 +21,7 @@
 #include "shader.hpp"
 #include "renderer/renderer.hpp"
 #include "setup_context.hpp"
+#include "grid.hpp"
 
 #include "tests/test_runner.hpp"
 
@@ -39,16 +41,21 @@ int main(int argc, char** argv) {
 
   // Create state
   entt::DefaultRegistry registry;
+  grid g;
   for(auto ii = 0; ii < 4; ++ii) {
     auto e = registry.create();
     unsigned char color[4] {5, 5, (unsigned char)((rand() % 30) + 20), 255};
     float x = 800.0 * (float)rand() / (float)RAND_MAX;
     float y = 600.0 * (float)rand() / (float)RAND_MAX;
-    float vx = -1.0 + 2.0 * (float)rand() / (float)RAND_MAX;
-    float vy = -1.0 + 2.0 * (float)rand() / (float)RAND_MAX;
     registry.assign<cpos>(e, vec2 { x, y });
     registry.assign<cdebug_draw>(e, vec2 { 30.0f, 30.0f }, color);
-    registry.assign<cvel>(e, vec2 { vx, vy });
+    g.insert(e, ii, ii, true);
+  }
+
+  g.snap(registry);
+
+  for(auto ii = 0; ii < 4; ++ii) {
+    g.move(ii, 1, 0);
   }
 
   // Create window & renderer
@@ -63,6 +70,7 @@ int main(int argc, char** argv) {
   glClearColor(0.0, 0.0, 0.0, 1.0);
 
   while(!glfwWindowShouldClose(window)) {
+    g.step(registry);
     update(window, registry);
     game_renderer.render();
     iman.poll();

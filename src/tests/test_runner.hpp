@@ -15,6 +15,7 @@ namespace tests {
   // Include tests within this namespace
 #include "util.hpp"
 #include "test_test.hpp"
+#include "test_grid.hpp"
 
   void add_all_tests(std::vector<test>& tests, const std::vector<test>& to_append) {
     tests.insert(tests.end(), to_append.begin(), to_append.end());
@@ -24,6 +25,7 @@ namespace tests {
     std::vector<test> tests;
     // Add all the tests
     add_all_tests(tests, test_test_all_tests());
+    add_all_tests(tests, test_grid_all_tests());
 
     bool has_failure = 0;
 
