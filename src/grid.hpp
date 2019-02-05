@@ -50,6 +50,8 @@ struct grid_entity {
    Entities on the grid shouldn't have a velocity, or any other system
    controlling their movement - the grid acts on entity positions, and so
    can snap an entity back to the grid at any moment.
+
+   See grid_ecs.hpp for functions which integrate this with the ECS.
  */
 struct grid {
   /** Just model the grid as a linear list for now. */
@@ -100,8 +102,6 @@ struct grid {
   */
   bool move(int e, gint_t x, gint_t y) {
     assert (!(x == 0 && y == 0) && "Both x and y for a movement are 0.");
-    assert (!(x != 0 && y != 0) && "Both x and y for a movement are non-zero - 1 "
-            " square in the cardinal directions only!.");
     assert((x == 0 || x == 1 || x == -1) && "x can only be 0, 1, or -1");
     assert((y == 0 || y == 1 || y == -1) && "y can only be 0, 1, or -1");
 
@@ -133,46 +133,5 @@ struct grid {
     grid_entity->x += x;
     grid_entity->y += y;
     return true;
-  }
-
-  /** Step the moving entities */
-  void step(entt::DefaultRegistry& r) {
-    for (unsigned ii = 0; ii < moving_list.size(); ++ii) {
-      // Find the (world) position we SHOULD be at
-      auto &e = *moving_list[ii];
-      float world_x = grid_to_world(e.x);
-      float world_y = grid_to_world(e.y);
-
-      // Lookup the entity's position
-      auto& pos = r.get<cpos>(e.e);
-
-      // Move the entity at the given transition speed.
-      // TODO We're assuming that we're moving in one of the cardinal
-      // directions, and therefore are using the manhattan distance rather than
-      // the euclidean distance. This needs to be changed if we want movement in
-      // more than 4 directions.
-      float dis = std::abs(world_x - pos.vec.x) + std::abs(world_y - pos.vec.y);
-      if (dis < e.transition_speed) {
-        // Stop moving this entity
-        pos.vec.x = world_x;
-        pos.vec.y = world_y;
-        e.is_moving = false;
-        moving_list.erase(moving_list.begin() + ii);
-        ii --;
-      } else {
-        // Step
-        pos.vec.x += e.transition_speed * (world_x - pos.vec.x) / dis;
-        pos.vec.y += e.transition_speed * (world_y - pos.vec.y) / dis;
-      }
-    }
-  }
-
-  /** Snap all the entities to the grid. */
-  void snap(entt::DefaultRegistry& r) {
-    for (const auto &e : entity_list) {
-      auto& pos = r.get<cpos>(e.e);
-      pos.vec.x = grid_to_world(e.x);
-      pos.vec.y = grid_to_world(e.y);
-    }
   }
 };

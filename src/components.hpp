@@ -23,3 +23,13 @@ struct cdebug_draw {
     std::memcpy(col, _col, 4);
   };
 };
+
+/** Has a 'target' which is used to compute pathfinding. This is added / removed
+    from entities as they change their goals. */
+struct cpathfinder {
+  grid_path path;
+};
+
+/** Marks an entity as player controlled, so they can be moved by clicking. */
+struct cplayer_controlled {
+};
