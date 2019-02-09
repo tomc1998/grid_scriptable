@@ -1,3 +1,5 @@
+#pragma once
+
 #include <entt/entt.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -73,6 +75,7 @@ int main(int argc, char** argv) {
   // Create state
   entt::DefaultRegistry registry;
   grid g;
+
   for(auto ii = 0; ii < 4; ++ii) {
     auto e = registry.create();
     unsigned char color[4] {5, 5, (unsigned char)((rand() % 30) + 20), 255};

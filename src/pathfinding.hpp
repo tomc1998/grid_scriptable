@@ -34,7 +34,7 @@ struct grid_path_open_point {
 */
 template <typename F>
 void iterate_neighbours(gint_t x, gint_t y, F fn) {
-  constexpr float root2 = std::sqrt(2.0);
+  const float root2 = std::sqrt(2.0);
   fn(x, y-1, 1.0);
   fn(x+1, y-1, root2);
   fn(x+1, y, 1.0);
@@ -61,7 +61,7 @@ struct grid_path {
     std::vector<grid_path_closed_point> closed;
     closed.push_back({px, py, {0, 0}});
 
-    /** Return a pointer (or nullptr) to the smallest open tile. Null if there
+    /** Return a pointer (or nullptr) to the smallest open tile. Null if there
         are no more open tiles. */
     const auto get_smallest_open = [&open]() {
       float smallest_f = std::numeric_limits<float>::max();
