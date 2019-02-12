@@ -1,11 +1,10 @@
-#pragma once
-
 #include <entt/entt.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <lua.hpp>
 #include <png.h>
 
+#include <vector>
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
@@ -13,13 +12,17 @@
 #include <cmath>
 #include <iostream>
 #include <deque>
+#include <unordered_map>
+#include <utility>
 
 #include "input.hpp"
 #include "load_image.hpp"
 #include "script_test.hpp"
 #include "vector.hpp"
 #include "matrix.hpp"
+#include "color.hpp"
 #include "grid.hpp"
+#include "grid_focus.hpp"
 #include "pathfinding.hpp"
 #include "components.hpp"
 #include "shader.hpp"
@@ -30,6 +33,7 @@
 #include "tests/test_runner.hpp"
 
 void update(GLFWwindow* window, entt::DefaultRegistry &registry, grid& g) {
+  update_grid_focus();
   registry.view<cpos, cvel>().each([](auto entity, cpos &pos, cvel &vel) {
       if (pos.vec.x > 800.0 || pos.vec.x < 0.0) { vel.vec.x = -vel.vec.x; }
       if (pos.vec.y > 600.0 || pos.vec.y < 0.0) { vel.vec.y = -vel.vec.y; }
@@ -43,14 +47,13 @@ void update(GLFWwindow* window, entt::DefaultRegistry &registry, grid& g) {
       .each([&registry, &iman, &g](auto entity, const auto &pos, const auto &player_controlled) {
           const auto ge = g.find_entity(entity);
           assert(ge);
-          gint_t gx = world_to_grid((float)iman.mouse_x);
-          gint_t gy = world_to_grid((float)iman.mouse_y);
           if (registry.has<cpathfinder>(entity)) {
             // Set the new position
             auto& pf = registry.get<cpathfinder>(entity);
-            pf.path = grid_path(g, ge->x, ge->y, gx, gy);
+            pf.path = grid_path(g, ge->x, ge->y, grid_focus_state.x, grid_focus_state.y);
           } else {
-            registry.assign<cpathfinder>(entity, grid_path(g, ge->x, ge->y, gx, gy));
+            registry.assign<cpathfinder>(entity, grid_path(g, ge->x, ge->y,
+                                                           grid_focus_state.x, grid_focus_state.y));
           }
         });
   }
@@ -90,10 +93,6 @@ int main(int argc, char** argv) {
   }
 
   grid_snap(g, registry);
-
-  for(auto ii = 0; ii < 4; ++ii) {
-    g.move(ii, 1, 1);
-  }
 
   // Create window & renderer
   auto window = setup_context();
